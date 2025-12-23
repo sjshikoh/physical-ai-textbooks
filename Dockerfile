@@ -46,4 +46,4 @@ EXPOSE 8000
 # Run FastAPI app
 # IMPORTANT: matches backend/src/api/main.py
 # ---------------------------
-CMD ["uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "backend.src.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
