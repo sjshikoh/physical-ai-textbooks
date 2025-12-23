@@ -1,0 +1,333 @@
+openapi: 3.0.3
+info:
+  title: Textbook RAG API
+  description: API for the AI-Native Textbook with RAG functionality
+  version: 1.0.0
+  contact:
+    name: Textbook Development Team
+    email: dev@textbook.example.com
+
+servers:
+  - url: https://api.textbook.example.com
+    description: Production server
+  - url: https://staging-api.textbook.example.com
+    description: Staging server
+
+paths:
+  /api/v1/textbook/chapters:
+    get:
+      summary: Get all textbook chapters
+      description: Retrieve a list of all textbook chapters with their metadata
+      operationId: getChapters
+      responses:
+        '200':
+          description: List of textbook chapters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  chapters:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Chapter'
+                  total:
+                    type: integer
+                    example: 6
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/v1/textbook/chapters/{slug}:
+    get:
+      summary: Get a specific chapter
+      description: Retrieve a textbook chapter by its slug
+      operationId: getChapterBySlug
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          description: URL-friendly identifier for the chapter
+          schema:
+            type: string
+            example: "01-intro-to-physical-ai"
+      responses:
+        '200':
+          description: Textbook chapter content
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  chapter:
+                    $ref: '#/components/schemas/Chapter'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/v1/rag/query:
+    post:
+      summary: Query the RAG system
+      description: Submit a question to the RAG system and get a response based on textbook content
+      operationId: queryRAG
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RAGQueryRequest'
+      responses:
+        '200':
+          description: RAG system response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RAGQueryResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/v1/rag/query-by-text:
+    post:
+      summary: Query using selected text
+      description: Submit a question based on selected text from a chapter
+      operationId: queryByTextSelection
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TextSelectionQueryRequest'
+      responses:
+        '200':
+          description: RAG system response based on selected text
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RAGQueryResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/v1/session/preferences:
+    get:
+      summary: Get user preferences
+      description: Retrieve current user session preferences
+      operationId: getUserPreferences
+      responses:
+        '200':
+          description: User preferences
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  preferences:
+                    type: object
+                    additionalProperties:
+                      type: string
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      summary: Set user preferences
+      description: Update user session preferences
+      operationId: setUserPreferences
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                preferences:
+                  type: object
+                  additionalProperties:
+                    type: string
+      responses:
+        '200':
+          description: Updated preferences
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  preferences:
+                    type: object
+                    additionalProperties:
+                      type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  schemas:
+    Chapter:
+      type: object
+      required:
+        - id
+        - title
+        - slug
+        - content
+        - order
+        - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the chapter
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        title:
+          type: string
+          description: Title of the chapter
+          example: "Introduction to Physical AI"
+        slug:
+          type: string
+          description: URL-friendly identifier
+          example: "01-intro-to-physical-ai"
+        content:
+          type: string
+          description: Markdown content of the chapter
+          example: "# Introduction\nThis chapter covers..."
+        order:
+          type: integer
+          description: Position in the textbook sequence
+          example: 1
+        created_at:
+          type: string
+          format: date-time
+          description: Timestamp of creation
+          example: "2025-01-01T00:00:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          description: Timestamp of last update
+          example: "2025-01-01T00:00:00Z"
+        metadata:
+          type: object
+          description: Additional chapter metadata
+          additionalProperties: true
+
+    RAGQueryRequest:
+      type: object
+      required:
+        - query
+      properties:
+        query:
+          type: string
+          description: The user's question
+          example: "What is the main concept of Physical AI?"
+        session_id:
+          type: string
+          format: uuid
+          description: Session identifier for tracking
+          example: "550e8400-e29b-41d4-a716-446655440001"
+        context:
+          type: string
+          description: Optional context from the current page
+          example: "Chapter 1 discusses the fundamentals..."
+
+    TextSelectionQueryRequest:
+      type: object
+      required:
+        - selected_text
+        - query
+      properties:
+        selected_text:
+          type: string
+          description: The text that was selected by the user
+          example: "Physical AI combines robotics with artificial intelligence..."
+        query:
+          type: string
+          description: The user's question about the selected text
+          example: "Can you explain this concept further?"
+        session_id:
+          type: string
+          format: uuid
+          description: Session identifier for tracking
+          example: "550e8400-e29b-41d4-a716-446655440001"
+
+    RAGQueryResponse:
+      type: object
+      required:
+        - response
+        - sources
+        - confidence
+      properties:
+        response:
+          type: string
+          description: The AI-generated response to the query
+          example: "Physical AI is an interdisciplinary field that combines robotics..."
+        sources:
+          type: array
+          description: List of source chunks used to generate the response
+          items:
+            type: object
+            properties:
+              chapter_slug:
+                type: string
+                example: "01-intro-to-physical-ai"
+              text:
+                type: string
+                example: "Physical AI combines robotics with artificial intelligence..."
+              similarity_score:
+                type: number
+                format: float
+                example: 0.85
+        confidence:
+          type: number
+          format: float
+          description: Confidence score of the response (0-1)
+          example: 0.92
+        query_id:
+          type: string
+          format: uuid
+          description: Unique identifier for this query
+          example: "550e8400-e29b-41d4-a716-446655440002"
+
+  responses:
+    BadRequest:
+      description: Bad request - invalid input parameters
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Invalid input parameters"
+              details:
+                type: object
+                additionalProperties: true
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Resource not found"
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Internal server error occurred"
+
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key for authentication
+
+security:
+  - apiKey: []

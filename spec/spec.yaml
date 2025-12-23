@@ -1,0 +1,63 @@
+project:
+  name: Physical AI & Humanoid Robotics Textbook
+  description: >
+    An AI-native technical textbook for teaching Physical AI and Humanoid Robotics,
+    built using spec-driven development principles.
+
+agents:
+  - id: curriculum_agent
+    description: Designs and structures the course curriculum.
+    skills:
+      - curriculum_flow_reasoning
+      - educational_content_generation
+
+  - id: content_authoring_agent
+    description: Writes and refines textbook chapters.
+    skills:
+      - educational_content_generation
+      - educational_content_adaptation
+
+  - id: retrieval_agent
+    description: Prepares and retrieves textbook content for question answering.
+    skills:
+      - semantic_content_chunking
+
+  - id: tutoring_agent
+    description: Answers learner questions using grounded textbook content.
+    skills:
+      - grounded_question_answering
+
+  - id: personalization_agent
+    description: Personalizes learning experience based on user background.
+    skills:
+      - user_background_interpretation
+      - educational_content_adaptation
+
+  - id: translation_agent
+    description: Translates textbook content into Urdu.
+    skills:
+      - technical_translation
+
+user_scenarios:
+  - scenario: Browse textbook chapters
+    active_agents:
+      - curriculum_agent
+      - content_authoring_agent
+
+  - scenario: Ask questions about textbook content
+    active_agents:
+      - retrieval_agent
+      - tutoring_agent
+
+  - scenario: Ask questions based on selected text
+    active_agents:
+      - retrieval_agent
+      - tutoring_agent
+
+  - scenario: Personalize chapter content
+    active_agents:
+      - personalization_agent
+
+  - scenario: Translate chapter content to Urdu
+    active_agents:
+      - translation_agent
