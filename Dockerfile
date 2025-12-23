@@ -1,5 +1,5 @@
 # ---------------------------
-# Base image (NOT slim – avoids asyncpg build issues)
+# Base image
 # ---------------------------
 FROM python:3.10
 
@@ -34,16 +34,16 @@ RUN pip install --no-cache-dir -r requirements.txt
 # ---------------------------
 # Copy application code
 # ---------------------------
-COPY ./src ./src
-COPY ./.env ./.env
+COPY ./backend/src ./src
+COPY ./backend/.env ./.env
 
 # ---------------------------
-# Expose port
+# Expose HF Spaces port
 # ---------------------------
-EXPOSE 8000
+EXPOSE 7860
 
 # ---------------------------
 # Run FastAPI app
-# IMPORTANT: matches backend/src/api/main.py
 # ---------------------------
-CMD ["uvicorn", "backend.src.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "7860"]
+
